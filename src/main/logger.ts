@@ -1,8 +1,8 @@
 import winston from 'winston';
-import util from 'util';
+import util from 'node:util';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
-import { join } from 'path';
+import { join } from 'node:path';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { TransformableInfo } from 'logform';
 
@@ -29,9 +29,10 @@ const createLogger = () => winston.createLogger({
 });
 
 const logDirPath = app.isPackaged ? app.getPath('userData') : '.';
+export const logFilePath = join(logDirPath, 'app.log');
 
 const logger = createLogger();
-logger.add(new winston.transports.File({ level: 'debug', filename: join(logDirPath, 'app.log'), options: { flags: 'a' } }));
-if (!app.isPackaged) logger.add(new winston.transports.Console());
+logger.add(new winston.transports.Console());
+logger.add(new winston.transports.File({ level: 'debug', filename: logFilePath, options: { flags: 'a' }, maxsize: 1e6, maxFiles: 100, tailable: true }));
 
 export default logger;
